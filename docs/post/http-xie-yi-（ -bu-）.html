@@ -114,7 +114,25 @@ API 调用：客户端通过 HTTP 请求调用服务器的 API，获取或修改
 安全性问题：HTTP 是明文传输，数据容易被窃听或篡改（已通过 HTTPS 解决）。<br>
 性能问题：HTTP/1.1 的性能较差（如头部冗余、队头阻塞等），后来通过 HTTP/2 和 HTTP/3 优化。</p>
 <h2>二、如何查看一个完整的发包:</h2>
-<p>使用bp进行一次拦截就可以就可一看到一次完整的发包，至于bp的下载，自己去翻吧</p></div>
+<p>使用bp进行一次拦截就可以就可一看到一次完整的发包，至于bp的下载，自己去翻吧网上还是很多的，实在不行，转战国产yakit，还不用配置乱七八糟的环境，实乃轮椅中的轮椅。</p>
+<h3>1. 有哪些东西会出现在发包之中：</h3>
+<h4>①：传参数的方法：post与get，会形成不同的发包形式</h4>
+<h4>②：各种乱七八糟的参数：其实就是一些交互的信息比如：</h4>
+<p>你从哪里来？你是谁？你的ip？你用的什么浏览器……………………</p>
+<h3>2. 发包之后：</h3>
+<p>经过发包之后，如果你的网络不存在问题，请求的服务器不存在任何问题的话，你将获得一份响应，将服务器的回复发送给你<br>
+，也就是一份响应，你会收到一份响应的包。<br>
+附上一份请求头响应头大全：(<a href="https://tool.aitags.cn/tools/base_httpheader" rel="nofollow">https://tool.aitags.cn/tools/base_httpheader</a>)</p>
+<h2>三、CTF考点</h2>
+<p>###1、基础：<br>
+各种web题目的基础，都需要抓包改包的支持，bp中的repeater,Intruder，进行一系列的抓包和爆破操作。<br>
+关于常见的考点，当前ctf版本，纯粹考察web请求的伪造题目已经非常罕见了，但是为了后人的学习，这里依然做一个介绍：<br>
+修改User-Agent以达到改变访问浏览器来源的伪造<br>
+修改Referer以伪造请求来源<br>
+修改X-Forwarded-For以伪造访问ip的来源<br>
+……………………还有很多，这里仅做一个引领，其余的根据赛题的要求进行改变并进行编写和改变。</p>
+<h2>四、爆破</h2>
+<p>关于爆破，intruder的使用并不困难，难的是字典哪里来：这里附上一份字典</p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
