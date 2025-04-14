@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>C137_backer 的博客</title><link>https://C137-backer.github.io/C137backer.github.io</link><description>在乎你在乎的人怎么在乎你，别在乎你不在乎的人怎么在乎你。</description><copyright>C137_backer 的博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://avatars.githubusercontent.com/u/207218297?v=4</url><title>avatar</title><link>https://C137-backer.github.io/C137backer.github.io</link></image><lastBuildDate>Mon, 14 Apr 2025 17:59:51 +0000</lastBuildDate><managingEditor>C137_backer 的博客</managingEditor><ttl>60</ttl><webMaster>C137_backer 的博客</webMaster><item><title>php的基础和普通的一些绕过</title><link>https://C137-backer.github.io/C137backer.github.io/post/php-de-ji-chu-he-pu-tong-de-yi-xie-rao-guo.html</link><description>## 新生第一步，认识md5（five）
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>C137_backer 的博客</title><link>https://C137-backer.github.io/C137backer.github.io</link><description>在乎你在乎的人怎么在乎你，别在乎你不在乎的人怎么在乎你。</description><copyright>C137_backer 的博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://avatars.githubusercontent.com/u/207218297?v=4</url><title>avatar</title><link>https://C137-backer.github.io/C137backer.github.io</link></image><lastBuildDate>Mon, 14 Apr 2025 18:03:08 +0000</lastBuildDate><managingEditor>C137_backer 的博客</managingEditor><ttl>60</ttl><webMaster>C137_backer 的博客</webMaster><item><title>php的基础和普通的一些绕过</title><link>https://C137-backer.github.io/C137backer.github.io/post/php-de-ji-chu-he-pu-tong-de-yi-xie-rao-guo.html</link><description>## 新生第一步，认识md5（five）
 例题：
 ```php
 &lt;?php 
@@ -79,7 +79,7 @@ passthru()
 array_map()
 popen()
 这些函数都是常见的敏感函数，容易造成一些危险的漏洞
-[当然也是很重要的考点，其具体作用参考](https://zhuanlan.zhihu.com/p/622502997)
+当然也是很重要的考点，其具体作用参考(https://zhuanlan.zhihu.com/p/622502997)
 
 这些是一个笼统的记录，他们有不同的危险特色：
 ###1、代码执行系
