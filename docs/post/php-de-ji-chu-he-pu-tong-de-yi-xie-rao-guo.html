@@ -78,6 +78,7 @@ md5后值是万能密码：ffifdyop
 介绍大名鼎鼎的数组绕过：
 管他什么name[]=1password[]=2直接秒了，但是以后大概是没有这么顺利的题了
 
+
 ## 二、一些敏感的函数：
 eval()
 system()
@@ -165,6 +166,7 @@ md5后值是万能密码：ffifdyop
 
 介绍大名鼎鼎的数组绕过：
 管他什么name[]=1password[]=2直接秒了，但是以后大概是没有这么顺利的题了
+
 
 ## 二、一些敏感的函数：
 eval()
@@ -376,7 +378,9 @@ require_once()和include_once()，显然表示的是文件只包含一次的意�
 <h3>SSRF系</h3>
 <p><del>没学过还不会，先放着</del></p>
 <h3>XXE系</h3>
-<p><del>也没学过</del></p></div>
+<p><del>也没学过</del></p>
+<h2>其他：</h2>
+<p>php的变量名使用字母数字和下滑线构成的，所以会将空格、+、点、[转换为下划线，但是当[提前出现后，后面的点就不会再变成_了</p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
