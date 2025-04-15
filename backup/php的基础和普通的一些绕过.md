@@ -115,4 +115,43 @@ array_filter()
     system($_GET['cmd']);
 ?>
 ```
+#### exec() 执行外部程序
+```php
+<?php 
+    echo exec("whoami");
+?>
+```
+
+#### shell_exec() 通过shell环境执行命令，并将完整的输出以字符串的方式返回
+```php
+<?php 
+    echo shell_exec("whoami");
+?>
+```
+
+剩下的由于不怎么常用，这里仅做列举
+passthru() 执行外部程序并且显示原始输出
+```php
+<?php 
+    passthru("whoami");
+?>
+```
+proc_open() 执行一个命令，并且打开用来输入/输出的文件指针
+pcntl_exec() 在当前进程空间执行指定程序
+popen() 打开进程文件指针
+反引号，实质上还是调用的shell_exec()函数，在CTF题目里面有的时候会忘记过滤导致直接拿到flag
+### 文件包含系
+php中包含的函数一共有四个，主要作用为包含并运行指定文件
+require() 函数
+inclue() 函数
+require_once() 函数
+include_once() 函数
+include()与require_once()主要的区别是：include()在包含的过程中如果出现错误，会抛出一个警告，程序继续运行；而require()函数出现错误时，会直接报错并退出程序的执行
+require_once()和include_once()，显然表示的是文件只包含一次的意思，避免函数重定义和变量重新赋值等问题
+这些函数通常配和伪协议来实现文件包含漏洞；
+### SSRF系
+~~没学过还不会，先放着~~
+###  XXE系
+~~也没学过~~
+
 
