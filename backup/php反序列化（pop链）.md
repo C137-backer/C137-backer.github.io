@@ -22,3 +22,82 @@ __debugInfo() 打印所需调试信息
 
 然后？然后你已经学完了，可以去打pop链了：）
 ~~啊？我？我打pop链？真的假的~~
+
+在这里贴一份asalin师傅的触发样例吧：
+```php
+<?php
+class A{
+        public $a="hi";
+        public $b="no";
+        function __construct()
+        {
+            $this->a="hiiiii!";
+            echo $this->a."\n";
+            echo "this is construct\n";
+        }
+        function __wakeup()
+        {
+            echo "this is wakeup\n";
+        }//反序列化之前
+        function __destruct()
+        {
+            echo "this is destruct\n";
+        }//反序列化时会最后才触发
+
+        function __toString()
+        {
+            return "this is tostring\n";
+        }
+        function __call($name, $arguments)
+        {
+            echo "this is call\n";
+        }
+        function __get($a)
+        {
+            echo "this is get\n";
+        }
+        function __invoke()
+        {
+            echo "this is invoke\n";
+        }//尝试当作函数
+        
+
+        function say_hi()
+        {
+            echo "hiuhiu\n";
+        }
+    }
+    $aa=new A();// 所有最后都还要析构一次，对象的消失
+    $aa->say_hi();
+    $bb=serialize($aa);
+    $cc=unserialize($bb); 
+    echo $aa;// 作为字符串用时触发 tostring
+    $aa->say_no(); //call
+    $aa->c; //get
+    $aa(); //invoke
+```
+
+一些绕过：
+1.protected和private绕过
+
+绕过的方法：
+①：php7.1+反序列化对类属性不敏感，将protected改成public
+②：手动将序列化后的形式改为protected或者private的标准形式，结合urlencode和base64编码进行操作
+
+2.__wakeup绕过(比较常见)
+
+原理：
+当序列化字符串中表示对象属性个数的值大于真实的属性个数时会跳过__wakeup 的执行
+
+示例：
+O:4:"Dino":1:{s:1:"a";s:4:"misc";}改为O:4:"Dino":2:{s:1:"a";s:4:"misc";}
+
+3.利用16进制绕过字符过滤
+
+示例：序列化结果：O:4:"Dino":1:{s:3:"way";s:3:"web";}中含有字符web，但将s改成S后，O:4:"Dino":1:{S:3:"\\77ay";s:3:"web";}利用十六进制绕过了字符的过滤检测
+
+4.利用加号绕过正则匹配
+
+因为加号序列化时会被直接拼接，而正则匹配时不会，所以可以绕过；
+
+5.好像还有一种添加元素进行绕过的，不记得是什么了，以后再碰到再补吧。
