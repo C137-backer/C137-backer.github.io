@@ -10,9 +10,15 @@
         let theme = localStorage.getItem("meek_theme") || "light";
         document.documentElement.setAttribute("data-color-mode", theme);
     </script>
-<meta name="description" content="~~前面的路以后再来探索吧(留档提醒自己更新)~~。">
+<meta name="description" content="## 3、留言框（尖尖的）复现
+首先看题面的内容：sqlmap可能一把锁出来，但是sqlmap一把锁出来不太可能，首先猜测是sql注入漏洞，先进行一般的测试：
+进行常见的sql测试：1 or 1=1 --+ 检测回显，1 order by 1=1 --+ 测试列数，发现只有一列？随即进行1 union select database() --+
+~~前面的路以后再来探索吧(留档提醒自己更新)~~。">
 <meta property="og:title" content="校赛复盘">
-<meta property="og:description" content="~~前面的路以后再来探索吧(留档提醒自己更新)~~。">
+<meta property="og:description" content="## 3、留言框（尖尖的）复现
+首先看题面的内容：sqlmap可能一把锁出来，但是sqlmap一把锁出来不太可能，首先猜测是sql注入漏洞，先进行一般的测试：
+进行常见的sql测试：1 or 1=1 --+ 检测回显，1 order by 1=1 --+ 测试列数，发现只有一列？随即进行1 union select database() --+
+~~前面的路以后再来探索吧(留档提醒自己更新)~~。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://C137-backer.github.io/post/xiao-sai-fu-pan.html">
 <meta property="og:image" content="https://avatars.githubusercontent.com/u/207218297?v=4">
@@ -73,7 +79,10 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
 </div>
     <div id="content">
-<div class="markdown-body" id="postBody"><p><del>前面的路以后再来探索吧(留档提醒自己更新)</del></p></div>
+<div class="markdown-body" id="postBody"><h2>3、留言框（尖尖的）复现</h2>
+<p>首先看题面的内容：sqlmap可能一把锁出来，但是sqlmap一把锁出来不太可能，首先猜测是sql注入漏洞，先进行一般的测试：<br>
+进行常见的sql测试：1 or 1=1 --+ 检测回显，1 order by 1=1 --+ 测试列数，发现只有一列？随即进行1 union select database() --+<br>
+<del>前面的路以后再来探索吧(留档提醒自己更新)</del></p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
