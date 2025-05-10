@@ -182,10 +182,17 @@ HANDLER tbl_name CLOSE
 <h2>3、盲注</h2>
 <p>绝大多数的题目类型，很多时候题目的查询不会贵你一个确切的结果，只有一些不同的变化，这个时候，就只能等使用盲注的手法来解决问题，盲注的手法分为两种，布尔盲注和时间盲注。</p>
 <h3>布尔盲注</h3>
-<p>布尔盲注是通过类似回显状态（内容、长度）http响应状态码不同（200、500） http响应头变化（无条件冲顶像、设置cookie）错误代码等布尔状态的变化进行注入。</p>
+<p>布尔盲注是通过类似回显状态（内容、长度）http响应状态码不同（200、500） http响应头变化（无条件冲顶像、设置cookie）错误代码等布尔状态的变化进行注入。<br>
+步骤：<br>
+先通过</p>
+<div class="highlight highlight-source-sql"><pre class="notranslate"><span class="pl-k">select</span> <span class="pl-k">*</span><span class="pl-k">from</span> users <span class="pl-k">where</span> id <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>1<span class="pl-pds">'</span></span> <span class="pl-k">and</span> <span class="pl-c1">1</span><span class="pl-k">=</span><span class="pl-c1">1</span>;<span class="pl-c"><span class="pl-c">#</span></span>
+<span class="pl-k">select</span> <span class="pl-k">*</span><span class="pl-k">from</span> users <span class="pl-k">where</span> id <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>1<span class="pl-pds">'</span></span> <span class="pl-k">and</span> <span class="pl-c1">1</span><span class="pl-k">=</span><span class="pl-c1">2</span>;<span class="pl-c"><span class="pl-c">#</span></span></pre></div>
+<p>来判断正确与错误的状态，，寻找其中的区别，以此来判断后续的测试正确与否</p>
 <h3>时间盲注</h3>
 <p>时间盲注是根据响应的时间来判断查询的成功失败与否的，当查询成功时，响应的时间会比查询失败的结果有所区别，或者我们可以通过构造payload进行判断（sleep语句）。</p>
-<h3>过滤黑名单的检测：</h3></div>
+<h3>过滤黑名单的检测：</h3>
+<p>利用字典fuzz检测结果<br>
+通过回显的长度可以测定过滤的内容。</p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
