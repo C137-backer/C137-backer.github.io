@@ -178,7 +178,11 @@ HANDLER tbl_name READ { FIRST | NEXT }
 
 # 关闭已打开的句柄
 HANDLER tbl_name CLOSE
-</code></pre></div>
+</code></pre>
+<h2>3、盲注</h2>
+<p>绝大多数的题目类型，很多时候题目的查询不会贵你一个确切的结果，只有一些不同的变化，这个时候，就只能等使用盲注的手法来解决问题，盲注的手法分为两种，布尔盲注和时间盲注。</p>
+<h3>布尔盲注</h3>
+<p>布尔盲注是通过类似回显状态（内容、长度）http响应状态码不同（200、500） http响应头变化（无条件冲顶像、设置cookie）错误代码等布尔状态的变化进行注入。</p></div>
 <div style="font-size:small;margin-top:8px;float:right;"></div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
