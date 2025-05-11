@@ -201,8 +201,16 @@ HANDLER tbl_name CLOSE
 <span class="pl-k">select</span> <span class="pl-k">*</span> <span class="pl-k">from</span> users <span class="pl-k">where</span> id <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>1<span class="pl-pds">'</span></span> <span class="pl-k">and</span> substr((<span class="pl-k">select</span> database()),<span class="pl-c1">2</span>,<span class="pl-c1">1</span>) <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>e<span class="pl-pds">'</span></span> <span class="pl-c"><span class="pl-c">#</span>’</span>
  <span class="pl-k">select</span> <span class="pl-k">*</span> <span class="pl-k">from</span> users <span class="pl-k">where</span> id <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>1<span class="pl-pds">'</span></span> <span class="pl-k">and</span> substr((<span class="pl-k">select</span> database()),<span class="pl-c1">2</span>,<span class="pl-c1">1</span>) <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>f<span class="pl-pds">'</span></span> <span class="pl-c"><span class="pl-c">#</span></span></pre></div>
 <p>原理实际上就是一种爆破的手法，直接穷举出内容</p>
-<p>布尔盲注的核心手法其实就是使用截取来判断库中的内容；<br>
-截取的函数不只有substr。还有mid气功能基本一致，这里做出省略。</p>
+<p>布尔盲注的核心手法其实就是使用截取来判断库中的内容；</p>
+<h3>关于截取：</h3>
+<p>注意：mysql中的字符串起始位置是1而不是0。<br>
+可以用于截取的函数：</p>
+<h4>substr</h4>
+<div class="highlight highlight-source-sql"><pre class="notranslate">substr(string, start, length) <span class="pl-c"><span class="pl-c">#</span>截取字符串string从start位置开始的length个字符。注意：字符串位置从1开始。</span>
+<span class="pl-c"><span class="pl-c">#</span>等效命令：</span>
+substr(string <span class="pl-k">from</span> start for length)<span class="pl-c"><span class="pl-c">#</span>过滤了逗号时使用</span>
+<span class="pl-c1">substring</span>(string, start, length)
+<span class="pl-c1">substring</span>(string <span class="pl-k">from</span> start for length)</pre></div>
 <h3>时间盲注</h3>
 <p>时间盲注是根据响应的时间来判断查询的成功失败与否的，当查询成功时，响应的时间会比查询失败的结果有所区别，或者我们可以通过构造payload进行判断（sleep语句）。</p>
 <h3>过滤黑名单的检测：</h3>
